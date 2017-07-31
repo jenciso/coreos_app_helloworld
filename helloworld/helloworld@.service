@@ -1,0 +1,16 @@
+[Unit]
+Description=Hello World Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill helloworld
+ExecStartPre=-/usr/bin/docker rm -f helloworld
+ExecStartPre=/usr/bin/docker pull jenciso/helloworld:latest
+ExecStart=/usr/bin/docker run --name helloworld \
+  -p 3000:3000 jenciso/helloworld:latest
+ExecStop=-/usr/bin/docker stop helloworld
+
+[X-Fleet]
+Conflicts=helloworld@*

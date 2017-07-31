@@ -1,0 +1,16 @@
+[Unit]
+Description=Hello World Nginx
+Requires=docker.service
+After=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill helloworld-nginx
+ExecStartPre=-/usr/bin/docker rm -f helloworld-nginx
+ExecStartPre=/usr/bin/docker pull jenciso/helloworld-nginx:latest
+ExecStart=/bin/sh -c 'for host in `etcdctl ls /services/helloworld`; \
+do UPSTREAM=$UPSTREAM`etcdctl get $host`; \
+  done; \
+  docker run -t -e UPSTREAM="$UPSTREAM" \
+    --name helloworld-nginx -p 80:80 jenciso/helloworld-nginx:latest'
+ExecStop=-/usr/bin/docker stop helloworld-nginx

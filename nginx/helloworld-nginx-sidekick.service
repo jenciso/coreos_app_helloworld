@@ -1,0 +1,7 @@
+[Unit]
+Description=Restart Nginx On Change
+[Service]
+ExecStart=/usr/bin/etcdctl exec-watch \
+  /services/changed/helloworld -- \
+  /bin/sh -c "fleetctl stop helloworld-nginx.service; \
+  fleetctl start helloworld-nginx.service"

@@ -1,0 +1,22 @@
+[Unit]
+Description=Register Hello World %i
+BindsTo=helloworld@%i.service
+After=helloworld@%i.service
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/usr/bin/etcdctl set /services/changed/helloworld 1
+ExecStart=/bin/bash -c 'while true; \
+  do \
+    [ "`etcdctl get /services/helloworld/${COREOS_PUBLIC_IPV4}`" \
+      != "server ${COREOS_PUBLIC_IPV4}:3000;" ] && \
+    etcdctl set /services/changed/helloworld 1; \
+    etcdctl set /services/helloworld/${COREOS_PUBLIC_IPV4} \
+      \'server ${COREOS_PUBLIC_IPV4}:3000;\' \
+      --ttl 60; sleep 45; done'
+ExecStop=/usr/bin/etcdctl rm /services/helloworld/${COREOS_PUBLIC_IPV4}
+ExecStopPost=/usr/bin/etcdctl set /services/changed/helloworld 1
+
+[X-Fleet]
+MachineOf=helloworld@%i.service
